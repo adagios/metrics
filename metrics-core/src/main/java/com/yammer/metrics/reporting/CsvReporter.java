@@ -67,7 +67,6 @@ public class CsvReporter extends AbstractPollingReporter implements
     private final File outputDir;
     private final Map<MetricName, PrintStream> streamMap;
     private final Clock clock;
-    private long startTime;
 
     /**
      * Creates a new {@link CsvReporter} which will write all metrics from the given
@@ -121,7 +120,6 @@ public class CsvReporter extends AbstractPollingReporter implements
         this.outputDir = outputDir;
         this.predicate = predicate;
         this.streamMap = new HashMap<MetricName, PrintStream>();
-        this.startTime = 0L;
         this.clock = clock;
     }
 
@@ -143,7 +141,7 @@ public class CsvReporter extends AbstractPollingReporter implements
 
     @Override
     public void run() {
-        final long time = TimeUnit.MILLISECONDS.toSeconds(clock.time() - startTime);
+        final long time = TimeUnit.MILLISECONDS.toSeconds(clock.time());
         final Set<Entry<MetricName, Metric>> metrics = getMetricsRegistry().allMetrics().entrySet();
         try {
             for (Entry<MetricName, Metric> entry : metrics) {
@@ -233,7 +231,6 @@ public class CsvReporter extends AbstractPollingReporter implements
 
     @Override
     public void start(long period, TimeUnit unit) {
-        this.startTime = clock.time();
         super.start(period, unit);
     }
 
