@@ -127,16 +127,23 @@ public class CsvReporter extends AbstractPollingReporter implements
      * Returns an opened {@link PrintStream} for the given {@link MetricName} which outputs data
      * to a metric-specific {@code .csv} file in the output directory.
      *
+     *
      * @param metricName    the name of the metric
+     * @param header        the header for file, to be used only on new files
      * @return an opened {@link PrintStream} specific to {@code metricName}
      * @throws IOException if there is an error opening the stream
      */
-    protected PrintStream createStreamForMetric(MetricName metricName) throws IOException {
-        final File newFile = new File(outputDir, metricName.getName() + ".csv");
-        if (newFile.createNewFile()) {
-            return new PrintStream(new FileOutputStream(newFile));
+    protected PrintStream createStreamForMetric(MetricName metricName, String header) throws IOException {
+        final File metricFile = new File(outputDir, metricName.toString() + ".csv");
+        boolean newFile = metricFile.createNewFile();
+
+        PrintStream stream = new PrintStream(new FileOutputStream(metricFile, true));
+
+        if (newFile) {
+            stream.println(header);
         }
-        throw new IOException("Unable to create " + newFile);
+
+        return stream;
     }
 
     @Override
@@ -251,9 +258,8 @@ public class CsvReporter extends AbstractPollingReporter implements
         synchronized (streamMap) {
             stream = streamMap.get(metricName);
             if (stream == null) {
-                stream = createStreamForMetric(metricName);
+                stream = createStreamForMetric(metricName, header);
                 streamMap.put(metricName, stream);
-                stream.println(header);
             }
         }
         return stream;
